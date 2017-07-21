@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="second.css">
+    <title>区域经销商</title>
+</head>
+<body>
+<div id="container" tabindex="0">
+    <div class="button">
+        <a href="javascript:void(0);"  class="home">HOME</a>
+        <ul class="list">
+            <li onclick="closewin();"><a href="#">返回</a></li>
+            <li class="Nation"><a href="#">全国</a></li>
+            <li class="east"><a href="#">东</a></li>
+            <li class="west"><a href="#">西</a></li>
+            <li class="south"><a href="#">南</a></li>
+            <li class="north"><a href="#">北</a></li>
+        </ul>
+    </div>
+    <div class="dealer-lagend">
+        <p><span class="lagend dealer-lagend1"></span><span>DT with Positive Change</span></p>
+        <p><span class="lagend dealer-lagend2"></span><span>DT with Nagative Change</span></p>
+        <p><span class="lagend dealer-lagend3"></span><span>DT without Order</span></p>
+    </div>
+</div>  
+<div class="sidebar">
+    
+</div>
+<script src="marker.js"></script>
+<script src="https://webapi.amap.com/maps?v=1.3&key=469c928619ba1a9d85a6d089a8eb65bb"></script>
+<script src="https://webapi.amap.com/ui/1.0/main.js"></script>
+<script src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+<script src="jquery-2.1.3.min.js"></script>
+<script type="text/javascript">
+    //数字变千位 
+    function toThousands(num) {
+        var result = '', counter = 0;
+        num = (num || 0).toString();
+        for (var i = num.length - 1; i >= 0; i--) {
+            counter++;
+            result = num.charAt(i) + result;
+            if (!(counter % 3) && i != 0) { result = ',' + result; }
+        }
+        return result;
+    }
+    // 获取url参数
+    function getQueryString(name) { 
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+        var r = window.location.search.substr(1).match(reg); 
+        if (r != null) return unescape(r[2]); return null; 
+        } 
+
+    var url_adcode=getQueryString('adcode');
+    // 绘图
+    var map = new AMap.Map('container', {
+
+        resizeEnable: true,
+        zoom: 5,
+        zooms:[5,9],
+        center: [106.485352, 34.603692],
+        mapStyle:'amap://styles/01e28a70f8fb054dcc5d2c91890de11e',
+        labelzIndex:120
+    });
+
+     AMapUI.loadUI(['geo/DistrictExplorer'], function(DistrictExplorer) {
+
+           //创建一个实例
+           var districtExplorer = window.districtExplorer = new DistrictExplorer({
+                eventSupport: true, //打开事件支持
+                map: map
+            });
+        
+           var render=function(adcode,color){
+                districtExplorer.loadAreaNode(adcode, function(error, areaNode) {
+                   //更新地图视野
+                   //map.setBounds(areaNode.getBounds(), null, null, true);
+                   //清除已有的绘制内容
+                   districtExplorer.clearFeaturePolygons();
+                   //绘制子区域
+                   districtExplorer.renderSubFeatures(areaNode, function(feature, i) {
+                       return {
+                           cursor: 'default',
+                           bubble: true,
+                           strokeColor: 'transparent',
+                           strokeWeight: 0, //线宽
+                           fillColor: color, //填充色
+                           fillOpacity: 0.8,//填充透明度
+                       };
+                   });
+               });
+           }
+           render(100000,"transparent");
+
+           if(url_adcode){
+                render(url_adcode,"#158ff1");
+           }
+           function toggleHoverFeature(feature) {
+                if (!feature) {
+                    return;
+                }
+                var props = feature.properties;
+
+                //更新相关多边形的样式
+                var polys = districtExplorer.findFeaturePolygonsByAdcode(props.adcode);
+                 render(props.adcode,"#158ff1");
+            }
+
+            districtExplorer.on('featureClick', function(e, feature) {
+                toggleHoverFeature(feature);
+                $('.sidebar').css('display','block');
+                $('.button').css("right","26%");
+                $('.dealer-lagend').css({
+                    "display":"inline-block",
+                    "right":"26%"   
+                });
+            });
+
+            districtExplorer.on('outsideClick', function(e) {
+             districtExplorer.clearFeaturePolygons();    
+             });
+
+        });
+     
+    var infoWindow = new AMap.InfoWindow({
+        offset: new AMap.Pixel(100, -40)
+    });
+    function markerClick(e){
+        infoWindow.setContent(e.target.content);
+        infoWindow.open(map, e.target.getPosition());
+    }
+    var createMarker = function(data,hide,index) {
+        var div = document.createElement('div');
+        div.className = 'circle';
+        var icon;
+        var YTD;
+        var width;
+        if(data.YTD_2017){
+            YTD=data.YTD_2017;
+        }
+        if(data.sell_status==2){
+            icon = new AMap.Icon({
+                image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E5%AE%9A%E4%BD%8D.png',//24px*24px
+                //icon可缺省，缺省时为默认的蓝色水滴图标，
+                imageSize : new AMap.Size(19,31)
+            });
+        }
+        else if(data.sell_status==0){
+            if(YTD>1028181){
+                width=24;
+            }
+            else if(YTD>133822&&YTD<1028181){
+                width=16;
+            }
+            else if(YTD<133822){
+                width=10;
+            }
+            icon = new AMap.Icon({
+                image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E7%BA%A2%E8%89%B2%281%29.png   ',//24px*24px
+                //icon可缺省，缺省时为默认的蓝色水滴图标，
+                imageSize : new AMap.Size( width, width)
+            });
+        }
+        else if(data.sell_status==1){
+            if(YTD>10199706){
+                width=24;
+            }
+            else if(YTD>1001783&&YTD<10199706){
+                width=16;
+            }
+            else if(YTD<1001783){
+                width=10;
+            }
+            if(data.chg_ya>=0){
+                icon = new AMap.Icon({
+                    image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E8%93%9D%E7%BB%BF%281%29.png',//24px*24px
+                    //icon可缺省，缺省时为默认的蓝色水滴图标，
+                    imageSize : new AMap.Size(width,width)
+                });
+            }
+            else if(data.chg_ya<0){
+                icon = new AMap.Icon({
+                    image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E9%BB%84%E8%89%B2%281%29.png',//24px*24px
+                    //icon可缺省，缺省时为默认的蓝色水滴图标，
+                    imageSize : new AMap.Size(width,width)
+                });
+            }
+        }
+
+        var marker = new AMap.Marker({
+            //content: div,
+            icon:icon,
+            title:data.name,
+            position: [data.lng,data.lat],
+            zIndex: 150,
+            offset: new AMap.Pixel(-10, -40)
+        });
+            marker.content = data.name&&data.province_gs_2015&&data.province_gs_2016&&data.province_ytd_2017&&data.chg_ya?
+                    '<p><span>Province:</span>' + data.name + '</p><p><span>2015_province_gs:</span>' + toThousands(parseInt(data.province_gs_2015/1000)) + 'k</p><p><span>2016_province_gs:</span>' + toThousands(parseInt(data.province_gs_2016/1000)) + 'k</p><p><span>2017_province_ytd:</span>' + toThousands(parseInt(data.province_ytd_2017/1000)) + 'k</p><p><span>chg_ya:</span>' + (data.chg_ya*100).toFixed(2) + '%</p><a href="#" id="detail" onclick="_onClick(' + index + ')">查看详情</a>'
+                    :'<p><span>CustomerCode:</span>' + data.CustomerCode + '</p><p><span>CustomerName:</span>' + data.CustomerName + '</p><p><span>RegionGroup:</span>' + data.RegionGroup + '</p>' +
+                    '<p><span>Region:</span>' + data.Region + '</p><p><span>Area:</span>' + data.Area + '</p><p><span>gs_2015:</span>' + toThousands(parseInt(data.gs_2015/1000)) + 'k</p>' +
+                     '<p><span>gs_2016:</span>' + toThousands(parseInt(data.gs_2016/1000)) + 'k</p><p><span>YTD_2017:</span>' + toThousands(parseInt(data.YTD_2017/1000)) + 'k</p><p><span>chg_ya:</span>' + (data.chg_ya*100).toFixed(2) + '%</p>' +
+                    '<p><span>Biscuit:</span><span>'+toThousands(parseInt(data.Biscuit/1000))+'k</span></p><p><span>Gum:</span><span>'+toThousands(parseInt(data.Gum/1000))+'k</span></p><p><span>Chocolate:</span><span>'+toThousands(parseInt(data.Chocolate/1000))+'k</span></p>';
+        marker.on('click',markerClick);
+        //<a href="#" id="detail" onclick="_onClick(' + index + ')">查看详情</a>
+        marker.subMarkers = [];
+        if(!hide){
+            marker.setMap(map)
+        }
+        if(data.sub&&data.sub.length){
+            for(var i = 0 ; i<data.sub.length;i+=1){
+                marker.subMarkers.push(createMarker(data.sub[i],true,-1));
+            }
+        }
+        return marker;
+    }
+
+    var _onZoomEnd = function(e) {
+        if (map.getZoom() < 6) {
+            for (var i = 0; i < markers.length; i += 1) {
+                map.remove(markers[i].subMarkers)
+            }
+            map.add(markers);
+        }
+    }
+    var _onClick = function(index) {
+        if(markers[index].subMarkers.length){
+            map.add(markers[index].subMarkers);
+            map.setFitView(markers[index].subMarkers);
+            map.remove(markers);
+        }
+        infoWindow.close();
+    }
+
+    var createName = function(data) {
+            var nameDiv='<div class="nameSpan">'+ data.ch_name +'</div>'
+            var name = new AMap.Marker({
+                content: nameDiv,
+                title:data.name,
+                position: [data.lng,data.lat],
+                zIndex: 150,
+                offset: new AMap.Pixel(-15,0)
+            });
+               name.setMap(map)
+                   return name;
+        }
+    var markers = [];
+    var names = []; 
+    for (var i = 0; i < message.length; i += 1) {
+        var marker = createMarker(message[i],false,i);
+        markers.push(marker);
+        var name=createName(message[i])
+        names.push(name);
+    }
+
+    //map.setFitView();
+    AMap.event.addListener(map, 'zoomend', _onZoomEnd);
+    $('.Nation').click(function(){
+         map.setZoomAndCenter(5,[106.485352, 34.603692]);
+         districtExplorer.clearFeaturePolygons();
+
+    });
+    $('.east').click(function(){
+         map.setZoomAndCenter(6,[118.850097, 32.472695]);
+         districtExplorer.clearFeaturePolygons();
+    });
+    $('.west').click(function(){
+         map.setZoomAndCenter(6,[97.3828125, 33.284619]);
+         districtExplorer.clearFeaturePolygons();
+    });
+    $('.south').click(function(){
+         map.setZoomAndCenter(6,[112.609863, 28.2269700]);
+         districtExplorer.clearFeaturePolygons();
+    });
+    $('.north').click(function(){
+         map.setZoomAndCenter(6,[117.026367, 40.946713]);
+         districtExplorer.clearFeaturePolygons();
+    });
+</script>
+<script type="text/javascript" src="https://webapi.amap.com/demos/js/liteToolbar.js"></script>
+
+</body>
+<script>
+
+    function closewin(){
+        if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") !=-1) {
+            window.open('','_self','');
+            window.close();
+            // window.open("about:blank","_top").close()
+        } else {
+            window.opener = null;
+            window.open("", "_self");
+            window.close();
+            //window.open("about:blank","_top").close()
+        }
+    }
+
+    $('.home').click(function(event) {
+        $('.list').toggle(200);
+        
+    });
+</script>
+</html>

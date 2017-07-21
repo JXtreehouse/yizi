@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="main.css">
+    </style>
+    <title>区域经销商</title>
+</head>
+<body>
+<div id="container" tabindex="0">
+    <!--<a href="javascript:void(0);" onclick="closewin();" class="home">HOME</a>-->
+</div>
+<script src="marker.js"></script>
+<script src="https://webapi.amap.com/maps?v=1.3&key=469c928619ba1a9d85a6d089a8eb65bb"></script>
+<script src="https://webapi.amap.com/ui/1.0/main.js"></script>
+<script src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+<script src="jquery-2.1.3.min.js"></script>
+<script type="text/javascript">
+    function toThousands(num) {
+        var result = '', counter = 0;
+        num = (num || 0).toString();
+        for (var i = num.length - 1; i >= 0; i--) {
+            counter++;
+            result = num.charAt(i) + result;
+            if (!(counter % 3) && i != 0) { result = ',' + result; }
+        }
+        return result;
+    }
+    var map = new AMap.Map('container', {
+
+        resizeEnable: true,
+        zoom: 5,
+        zooms:[5,9],
+        center: [106.485352, 34.603692],
+        mapStyle:'amap://styles/01e28a70f8fb054dcc5d2c91890de11e',
+        labelzIndex:120
+    });
+        
+    var infoWindow = new AMap.InfoWindow({
+        offset: new AMap.Pixel(100, -40)
+    });
+    function markerClick(e){
+        infoWindow.setContent(e.target.content);
+        infoWindow.open(map, e.target.getPosition());
+    }
+
+    var createMarker = function(data,hide,index) {
+        var div = document.createElement('div');
+        div.className = 'circle';
+        var icon;
+        var YTD;
+        var width;
+        if(data.YTD_2017){
+            YTD=data.YTD_2017;
+        }
+        if(data.sell_status==2){
+            icon = new AMap.Icon({
+                image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E5%AE%9A%E4%BD%8D.png',//24px*24px
+                //icon可缺省，缺省时为默认的蓝色水滴图标，
+                imageSize : new AMap.Size(19,31)
+            });
+        }
+        else if(data.sell_status==0){
+            if(YTD>1028181){
+                width=24;
+            }
+            else if(YTD>133822&&YTD<1028181){
+                width=16;
+            }
+            else if(YTD<133822){
+                width=10;
+            }
+            icon = new AMap.Icon({
+                image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E7%BA%A2%E8%89%B2%281%29.png   ',//24px*24px
+                //icon可缺省，缺省时为默认的蓝色水滴图标，
+                imageSize : new AMap.Size( width, width)
+            });
+        }
+        else if(data.sell_status==1){
+            if(YTD>10199706){
+                width=24;
+            }
+            else if(YTD>1001783&&YTD<10199706){
+                width=16;
+            }
+            else if(YTD<1001783){
+                width=10;
+            }
+            if(data.chg_ya>=0){
+                icon = new AMap.Icon({
+                    image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E8%93%9D%E7%BB%BF%281%29.png',//24px*24px
+                    //icon可缺省，缺省时为默认的蓝色水滴图标，
+                    imageSize : new AMap.Size(width,width)
+                });
+            }
+            else if(data.chg_ya<0){
+                icon = new AMap.Icon({
+                    image : 'http://wyc-store.oss-cn-shanghai.aliyuncs.com/images/DataV%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91/%E9%BB%84%E8%89%B2%281%29.png',//24px*24px
+                    //icon可缺省，缺省时为默认的蓝色水滴图标，
+                    imageSize : new AMap.Size(width,width)
+                });
+            }
+        }
+
+        var marker = new AMap.Marker({
+            //content: div,
+            icon:icon,
+            title:data.name,
+            position: [data.lng,data.lat],
+            zIndex: 150,
+            offset: new AMap.Pixel(-10, -40)
+        });
+            marker.content ='<p><span>Province:</span>' + data.name + '</p><p><span>2015_province_gs:</span>' + toThousands(parseInt(data.province_gs_2015/1000)) + 'k</p><p><span>2016_province_gs:</span>' + toThousands(parseInt(data.province_gs_2016/1000)) + 'k</p><p><span>2017_province_ytd:</span>' + toThousands(parseInt(data.province_ytd_2017/1000)) + 'k</p><p><span>chg_ya:</span>' + (data.chg_ya*100).toFixed(2) + '%</p><a href="../second/second.html?adcode='+data.adcode+'" target="view_window id="detail">查看详情</a>';
+        marker.on('click',markerClick);
+        if(!hide){
+            marker.setMap(map)
+        }
+        return marker;
+    }
+
+    // 省名
+    var createName = function(data) {
+        var nameDiv='<div class="nameSpan">'+ data.ch_name +'</div>'
+        var name = new AMap.Marker({
+            content: nameDiv,
+            title:data.name,
+            position: [data.lng,data.lat],
+            zIndex: 150,
+            offset: new AMap.Pixel(-15,0)
+        });
+           name.setMap(map)
+               return name;
+    }
+    var markers = [];
+    var names = []; 
+    for (var i = 0; i < message.length; i += 1) {
+        var marker = createMarker(message[i],false,i);
+        markers.push(marker);
+        var name=createName(message[i])
+        names.push(name);
+    }
+
+    //map.setFitView();
+
+
+</script>
+<script type="text/javascript" src="https://webapi.amap.com/demos/js/liteToolbar.js"></script>
+
+</body>
+<script>
+
+    function closewin(){
+        if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") !=-1) {
+            window.open('','_self','');
+            window.close();
+            // window.open("about:blank","_top").close()
+        } else {
+            window.opener = null;
+            window.open("", "_self");
+            window.close();
+            //window.open("about:blank","_top").close()
+        }
+    }
+</script>
+</html>

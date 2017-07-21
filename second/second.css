@@ -1,0 +1,168 @@
+ body,html,#container{
+    height: 100%;
+    margin: 0px;
+    font:12px Arial;
+}
+.circle{
+    border-radius: 6px;
+    /*border: solid 1px silver;*/
+    width: 120px;
+    height: 16px;
+    padding: 3px;
+    text-align: center;
+    line-height: 18px;
+    max-width: 50px;
+    color:white;
+    
+}
+.amap-info-content{
+    border: 0;
+    animation:mymove 2s infinite ;
+    -webkit-animation:mymove 2s ;
+    animation-fill-mode:forwards;
+}
+@keyframes mymove{
+    0%{
+        background-color: transparent;
+    }
+    100%{
+        background-color: rgba(230,45,208,0.8);
+    }
+
+}
+.amap-info-sharp{
+ top: -2px;
+}
+.amap-info-content p{
+    margin: 0;
+    margin: 5px 0;
+    font-size: 16px;
+    color: #fff;
+    animation:font 2s infinite ;
+    -webkit-animation:font 2s ;
+    animation-fill-mode:forwards;
+}
+@keyframes font{
+    0%{
+        color: transparent;
+    }
+    100%{
+        color: #fff;
+    }
+
+}
+.amap-info-content p:nth-child(1) {
+    color: #38d4f5;
+    font-weight: bold;
+    font-size: 20px;;
+}
+.amap-info-content a{
+    color: #38d4f5;
+    font-size: 14px;
+    animation:font 2s infinite ;
+    -webkit-animation:a 2s ;
+    animation-fill-mode:forwards;
+}
+@keyframes a{
+    0%{
+        color: transparent;
+    }
+    100%{
+        color:  #38d4f5;
+    }
+
+}
+.amap-info-content a:focus{
+    color: #38d4f5;
+}
+.button{
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 100;
+}
+#container .home{
+    display: inline-block;
+    color: white;
+    background-color: #26e8e8;
+    z-index: 10000;
+    width:90px;
+    line-height:41px;
+    text-align: center;
+}
+.list{
+    padding: 0;
+    margin: 0;
+    display: none;
+}
+.list li{
+    list-style: none;
+    font-size: 14px;
+    color: #fff;
+    background-color: rgba(255,255,255,.2);
+    width: 90px;
+    line-height: 41px;
+    text-align: center;
+}
+.list li a{
+    color: #fff;
+    font-size: 14px;
+}
+.amap-info-sharp{
+    display: none;
+}
+.amap-toolbar{
+    top:0px !important;
+    left: 0px !important;
+}
+.amap-pancontrol,.amap-locate{
+    display: none !important;
+}
+.nameSpan{
+    color: #fff;
+    width: 150px;
+}
+.sidebar{
+    height: 100%;
+    width: 25%;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+}
+/*图例*/
+.dealer-lagend,.shop-lagend{
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+     z-index: 10000;
+    display: none;
+}
+.dealer-lagend p ,.shop-lagend p{
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    display: inline;
+    margin-left:30px;
+
+}
+.dealer-lagend p span,.shop-lagend p span{
+    display: inline-block;
+    line-height: 20px;
+    height: 20px;
+}
+.dealer-lagend p .lagend,.shop-lagend p .lagend{
+    width: 20px;
+    position: absolute;
+    left: -28px;
+}
+.dealer-lagend2{
+    background-color: #efe571;
+}
+.dealer-lagend3{
+    background-color: #dc4372;
+}
+.dealer-lagend1{
+    background-color: #5ec5a2;
+}
